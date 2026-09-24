@@ -65,10 +65,53 @@ def test_backend_intent_parameters_reject_non_finite_numbers():
         validate_backend_response(malformed)
 
 
+class CapturingBackend(MockCompanionBackend):
+    def __init__(self):
+        self.requests = []
+
+    def respond(self, request):
+        self.requests.append(request)
+        return super().respond(request)
+
+
 class MismatchedBackend(MockCompanionBackend):
     def respond(self, request):
         result = super().respond(request)
         return type(result)("wrong-request", result.conversation_id, result.text, result.intents)
+
+
+def test_backend_receives_complete_persisted_game_conversation(tmp_path):
+    store = WorldStore(tmp_path / "history.sqlite3")
+    backend = CapturingBackend()
+    app = BridgeApp(store, backend)
+
+    first = chat_payload("first message", "conversation-history")
+    first["request_id"] = "request-history-1"
+    first_response = app.chat(first)
+
+    second = chat_payload("second message", "conversation-history")
+    second["request_id"] = "request-history-2"
+    app.chat(second)
+
+    assert backend.requests[0].history == []
+    assert backend.requests[1].history == [
+        {"role": "user", "content": "first message", "turn_source": "user"},
+        {"role": "assistant", "content": first_response["text"]},
+    ]
+    store.close()
+
+
+def test_backend_history_reader_does_not_apply_ui_turn_limit(tmp_path):
+    store = WorldStore(tmp_path / "long-history.sqlite3")
+    store.ensure_conversation("conversation-long", "demo-world", "main")
+    for index in range(205):
+        store.add_turn(
+            "conversation-long", "user", "u{}".format(index),
+            "a{}".format(index), [],
+        )
+    assert len(store.turns("conversation-long", 999)) == 200
+    assert len(store.all_turns("conversation-long")) == 205
+    store.close()
 
 
 def test_untrusted_backend_identifiers_are_checked(tmp_path):

@@ -11,12 +11,12 @@
 
 Independent verification on 2026-09-24:
 
-- Fresh isolated environment: `pytest -q` -> **13 passed**.
+- Fresh isolated environment after the conversation-continuity patch: `pytest -q` -> **18 passed**.
 - Python 3.7.9 `compileall` over `game-mod/src` -> **PY37_COMPILE_OK**.
 - Fresh localhost smoke test verified gateway health, chat reply, and persisted chat history.
 - Public-safety text scan found no private names, local user ID, private server port marker, API-key-looking value, private-key header, project-local absolute path, U+FFFD replacement characters, or non-demo credentials.
-- Two Codex code-review passes were completed before first commit. Findings were fixed for non-finite JSON backend parameters, persisted chat-history rendering, and protocol-compatible game-side world/branch identifiers.
-- Additional manual review fixed conversation IDs crossing world/branch boundaries, bounded backend intent parameters, aligned public adapter naming, and corrected backend protocol documentation.
+- Codex review passes caught and fixed non-finite JSON backend parameters, persisted chat-history rendering, protocol-compatible game-side world/branch identifiers, positional SDK compatibility, and remote-backend privacy disclosure.
+- Additional manual review fixed conversation IDs crossing world/branch boundaries, bounded backend intent parameters, aligned public adapter naming, corrected backend protocol documentation, and ensured the complete persisted Game Conversation reaches the backend independently of the UI history limit.
 
 ## Known gaps
 

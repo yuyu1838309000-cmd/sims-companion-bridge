@@ -26,6 +26,7 @@ class TurnRequest:
     surface: str = "sims"
     turn_source: str = "user"
     world: Dict[str, Any] = field(default_factory=dict)
+    history: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

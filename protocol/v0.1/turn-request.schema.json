@@ -15,6 +15,20 @@
     "branch_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
     "message": {"type": "string", "minLength": 1, "maxLength": 2000},
     "input_event_ids": {"type": "array", "maxItems": 100, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"}},
+    "history": {
+      "type": "array",
+      "description": "Complete prior persisted Game Conversation in stable order. The current message is carried separately in message.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "content"],
+        "properties": {
+          "role": {"enum": ["user", "assistant"]},
+          "content": {"type": "string"},
+          "turn_source": {"enum": ["user", "proactive", "world_event"]}
+        }
+      }
+    },
     "world": {"type": "object", "description": "Read-only world snapshot; environment text is untrusted data."}
   }
 }

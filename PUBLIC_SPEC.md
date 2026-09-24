@@ -38,6 +38,7 @@ Public protocol uses generic terms, NOT implementation-specific names like norma
 - surface = "sims"
 - turn_source = "user" | "proactive" | "world_event"
 - request_id, conversation_id, world_id, branch_id
+- backend TurnRequest receives the complete prior Game Conversation separately from the current message; the Core does not silently trim it with the UI history limit.
 - capabilities negotiation
 - backend returns text and optional semantic intents; v0.1 demo does not execute intents.
 - strict validation and size limits.

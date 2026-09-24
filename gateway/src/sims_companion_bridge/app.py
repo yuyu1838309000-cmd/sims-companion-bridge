@@ -61,10 +61,22 @@ class BridgeApp:
             raise ValidationError("unknown world or branch")
         self.store.ensure_conversation(conversation_id, world_id, branch_id)
         event_ids = [e["event_id"] for e in self.store.recent_events(world_id, branch_id, 10)]
+        history = []
+        for turn in self.store.all_turns(conversation_id):
+            history.append({
+                "role": "user",
+                "content": turn["user_text"],
+                "turn_source": turn["turn_source"],
+            })
+            history.append({
+                "role": "assistant",
+                "content": turn["assistant_text"],
+            })
         backend_response = self.backend.respond(TurnRequest(
             request_id=request_id, conversation_id=conversation_id,
             world_id=world_id, branch_id=branch_id, message=message,
-            input_event_ids=event_ids, turn_source=turn_source, world=world,
+            input_event_ids=event_ids, history=history,
+            turn_source=turn_source, world=world,
         ))
         if isinstance(backend_response, TurnResponse):
             backend_response = asdict(backend_response)

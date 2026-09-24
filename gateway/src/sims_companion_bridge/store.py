@@ -127,9 +127,27 @@ class WorldStore:
 
     def turns(self, conversation_id, limit=100):
         rows = self._connection.execute(
-            "SELECT * FROM turns WHERE conversation_id=? ORDER BY created_at ASC LIMIT ?",
+            "SELECT * FROM turns WHERE conversation_id=? ORDER BY created_at ASC, rowid ASC LIMIT ?",
             (conversation_id, min(max(int(limit), 1), 200)),
         ).fetchall()
+        return self._decode_turn_rows(rows)
+
+    def all_turns(self, conversation_id):
+        """Return the complete persisted Game Conversation in stable order.
+
+        Public Core intentionally does not silently trim backend-visible Game
+        Conversation history. Prompt/window policy belongs to the companion
+        backend, while the Core remains the durable source of conversation
+        continuity.
+        """
+        rows = self._connection.execute(
+            "SELECT * FROM turns WHERE conversation_id=? ORDER BY created_at ASC, rowid ASC",
+            (conversation_id,),
+        ).fetchall()
+        return self._decode_turn_rows(rows)
+
+    @staticmethod
+    def _decode_turn_rows(rows):
         result = []
         for row in rows:
             item = dict(row)

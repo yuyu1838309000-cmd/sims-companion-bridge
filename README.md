@@ -64,10 +64,11 @@ interface and is disabled. The demo has no private persona or memory data and is
 not a playable mod. See [the memory model](docs/memory-model.md) and
 [security policy](SECURITY.md).
 
-If a remote backend is added later, the adapter may send the user's message,
-world/branch identifiers, selected event IDs, and the read-only world snapshot
-off-device. Such a mode must be explicit opt-in, disclose its destination and
-data fields, and must not place credentials in the browser bundle.
+If a remote backend is added later, the adapter may send the current user
+message, the complete prior Game Conversation, world/branch identifiers,
+selected event IDs, and the read-only world snapshot off-device. Such a mode
+must be explicit opt-in, disclose its destination and data fields, and must not
+place credentials in the browser bundle.
 
 ## Repository map
 

@@ -22,3 +22,12 @@ Local processes and browser extensions can still access loopback services; this
 demo is not an authentication boundary. Do not expose its port through a proxy or
 port-forward. The SQLite file contains local demo conversations and should be
 handled as user data even though the seeded content is synthetic.
+
+## Future remote-backend boundary
+
+Remote backends are intentionally not configurable in v0.1. A future remote
+adapter may transmit the current message, the complete prior Game Conversation,
+world/branch identifiers, selected event references, and explicitly selected
+read-only world/environment data. That mode must be explicit opt-in and show the
+destination and outbound data scope before use; backend credentials must never
+be exposed to the browser bundle or written to ordinary logs.
