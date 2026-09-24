@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sims-companion-bridge/v0.1/turn-response.schema.json",
+  "title": "Companion turn response v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "request_id", "conversation_id", "turn_id", "output_message_id", "text", "intents", "intents_executed"],
+  "properties": {
+    "protocol_version": {"const": "0.1"},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "conversation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "turn_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "output_message_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "intents": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/intent"}},
+    "intents_executed": {"const": false}
+  },
+  "$defs": {"intent": {"type": "object", "additionalProperties": false, "required": ["type", "parameters"], "properties": {"type": {"type": "string", "minLength": 1, "maxLength": 64}, "parameters": {"type": "object"}}}}
+}

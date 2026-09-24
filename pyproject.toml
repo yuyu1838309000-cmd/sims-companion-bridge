@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sims-companion-bridge"
+version = "0.1.0"
+description = "A mock-first, provider-neutral companion bridge demo for The Sims 4"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{name = "Sims Companion Bridge contributors"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7,<9"]
+
+[project.scripts]
+sims-companion-bridge = "sims_companion_bridge.server:main"
+
+[tool.setuptools]
+packages = ["sims_companion_bridge", "sims_companion_sdk"]
+package-dir = {sims_companion_bridge = "gateway/src/sims_companion_bridge", sims_companion_sdk = "sdk/python/sims_companion_sdk"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

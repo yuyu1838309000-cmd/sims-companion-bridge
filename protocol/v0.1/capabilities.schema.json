@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sims-companion-bridge/protocol/v0.1/capabilities.schema.json",
+  "title": "Capabilities v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_versions", "chat", "semantic_intents", "cross_surface_recall", "game_actions"],
+  "properties": {
+    "protocol_versions": {"type": "array", "items": {"const": "0.1"}},
+    "chat": {"type": "boolean"},
+    "semantic_intents": {"type": "boolean"},
+    "cross_surface_recall": {"const": false},
+    "game_actions": {"const": false}
+  }
+}

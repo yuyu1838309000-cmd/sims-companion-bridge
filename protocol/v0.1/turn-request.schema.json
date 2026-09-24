@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sims-companion-bridge/v0.1/turn-request.schema.json",
+  "title": "Companion turn request v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "surface", "turn_source", "request_id", "conversation_id", "world_id", "branch_id", "message", "input_event_ids"],
+  "properties": {
+    "protocol_version": {"const": "0.1"},
+    "surface": {"const": "sims"},
+    "turn_source": {"enum": ["user", "proactive", "world_event"]},
+    "request_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "conversation_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "world_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "branch_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "message": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "input_event_ids": {"type": "array", "maxItems": 100, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"}},
+    "world": {"type": "object", "description": "Read-only world snapshot; environment text is untrusted data."}
+  }
+}
