@@ -27,6 +27,8 @@ class MyAdapter(BackendAdapter):
 
 Capability negotiation is included in `GET /api/v0.1/diagnostics`. Protocol JSON schemas live under `protocol/v0.1/`. Breaking changes require a new version directory and endpoint prefix.
 
+For trusted local integrations, a custom `BackendAdapter` can be injected programmatically with `create_server(..., backend=my_adapter)`. This does not add a remote-backend configuration surface; the default CLI still starts the deterministic mock adapter.
+
 ## HTTP endpoints
 
 | Method | Path | Purpose |

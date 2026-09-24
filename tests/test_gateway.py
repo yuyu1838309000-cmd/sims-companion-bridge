@@ -80,6 +80,20 @@ def test_untrusted_backend_identifiers_are_checked(tmp_path):
     store.close()
 
 
+def test_create_server_accepts_programmatic_backend(tmp_path):
+    class LocalAdapter(MockCompanionBackend):
+        adapter_id = "local-adapter-test"
+
+    instance = create_server(tmp_path / "custom.sqlite3", 0, backend=LocalAdapter())
+    try:
+        assert instance.app.diagnostics()["backend"]["id"] == "local-adapter-test"
+        assert instance.store.counts()["worlds"] == 1
+        assert instance.server_port > 0
+    finally:
+        instance.server_close()
+        instance.store.close()
+
+
 @pytest.fixture
 def server(tmp_path):
     web = Path(__file__).resolve().parents[1] / "web"

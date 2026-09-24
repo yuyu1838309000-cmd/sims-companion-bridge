@@ -126,10 +126,11 @@ def make_handler(app, web_root):
     return Handler
 
 
-def create_server(database, port=8765, web_root=None):
+def create_server(database, port=8765, web_root=None, backend=None):
     store = WorldStore(database)
-    app = BridgeApp(store, MockCompanionBackend())
+    app = BridgeApp(store, backend or MockCompanionBackend())
     server = ThreadingHTTPServer((HOST, port), make_handler(app, web_root or default_web_root()))
+    server.app = app
     server.store = store
     return server
 
