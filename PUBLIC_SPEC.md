@@ -3,7 +3,7 @@
 Goal: build a clean public demo repository for a The Sims 4 companion bridge.
 
 ## Positioning
-This is not "another AI NPC mod". It is a bridge that lets users connect an existing long-running AI companion/agent backend to The Sims 4 through an independent game window, world-scoped state, and a provider-neutral protocol.
+This is not "another AI NPC mod". It is a bridge that lets users connect an existing long-running AI companion/agent backend to The Sims 4 through world-scoped state and a provider-neutral protocol. The current browser Game Window is a development/demo and diagnostics surface; the player-facing direction is in-game UI, with external frontends remaining optional.
 
 ## Audience
 
@@ -26,17 +26,17 @@ The README should not assume that readers know this project's internal names. Us
 - World Event Store is the source of truth for game-world facts.
 
 ## Architecture
-1. game-mod/: Python 3.7-compatible read-only TS4 observation source and buildable TS4Script candidate; not yet game-tested.
+1. game-mod/: Python 3.7-compatible read-only TS4 observation source and buildable TS4Script candidate; first read-only smoke passed on 1.128.90.1030, but not yet a player-ready release.
 2. gateway/: modern Python local gateway, localhost-only.
-3. web/: independent Game Window UI.
+3. web/: browser-based development/demo and diagnostics UI; not a required final player surface.
 4. protocol/: versioned schemas/contracts.
 5. sdk/python/: backend adapter SDK.
 6. adapters/mock/: deterministic demo backend.
 7. docs/: architecture, backend protocol, security, memory model.
 8. tests/: unit/integration tests.
 
-## Required demo experience
-Run one command and open a local Game Window:
+## Current developer demo experience
+Run one command and open the local browser demo/diagnostics page:
 - Chat tab: send a message to the mock companion.
 - Now tab: display mock game online/offline, zone, player/companion state.
 - World tab: show world id/branch id and recent world events.

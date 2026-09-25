@@ -19,9 +19,11 @@ There are no game-action or backend-output execution paths.
 On first receipt, `WorldStore` inserts the immutable event and updates the
 matching `(world_id, branch_id)` current structured snapshot in one SQLite
 transaction. Exact event replays are no-ops; an event ID reused with different
-content is a conflict. With no explicit query scope, the Game Window selects
+content is a conflict. With no explicit query scope, the current browser demo/diagnostics page selects
 the most recently observed branch and scopes its conversation ID to that
-world/branch. `BridgeApp.chat()` then reads that same world row for
+world/branch. This browser surface is not a required final player UI; future
+player-facing in-game UI should reuse the same world/branch contracts rather
+than create a second state path. `BridgeApp.chat()` then reads that same world row for
 `TurnRequest.world`, so ingestion and backend context cannot silently diverge.
 Older databases receive additive `current_snapshot`, `current_event_id`, and
 canonical-event columns at startup.
