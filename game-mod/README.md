@@ -2,7 +2,7 @@
 
 This directory contains Python 3.7-compatible source plus a reproducible
 TS4Script build for the first public environment-observation path. The generated
-archive is an **untested candidate**, not a game-verified release. Nothing here
+archive has passed its first **read-only real-game smoke test on The Sims 4 1.128.90.1030**, but it is not yet a player-ready release. Nothing here
 performs game actions, changes autonomy, edits saves, or executes backend output.
 
 The source is split into auditable boundaries:

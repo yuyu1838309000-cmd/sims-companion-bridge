@@ -6,12 +6,12 @@
 
 Sims Companion Bridge connects an external AI companion or chat service to **The Sims 4**.
 
-The goal is simple: let the AI know what is happening in the game through a separate game chat window, without mixing game conversation with normal conversation.
+The goal is simple: let the AI know what is happening in the game and provide a separate game-focused conversation experience without mixing it with normal chat. The browser page in this repository is currently for demos and diagnostics; it is not meant to be a permanent requirement for players.
 
 **The current version is read-only. It can read game state. It cannot control Sims.**
 
-> Current status: the local demo works and a TS4Script test build can be produced.
-> The TS4Script has **not yet passed real-game testing**, so this is not a normal player release yet.
+> Current status: the read-only path has passed its first real-game smoke test on **The Sims 4 1.128.90.1030**.
+> This proves the script can load, read real game state, and deliver it to the local helper, but this is still not a normal player release.
 
 ## Who is this for?
 
@@ -42,7 +42,7 @@ See [compatibility and current support](docs/compatibility.en.md) for the exact 
 | Mock AI conversation | Works |
 | Read-only game snapshot protocol | Works in automated tests |
 | Build a Python 3.7 TS4Script | Works |
-| Real The Sims 4 loading test | Not completed yet |
+| Real The Sims 4 loading test | Read-only smoke passed on 1.128.90.1030 |
 | AI controls Sims | Not available |
 | Simple setup for ordinary players | Not available yet |
 
@@ -82,7 +82,7 @@ Then open:
 http://127.0.0.1:8765
 ```
 
-Stop it with `Ctrl+C`.
+This page is currently a development demo and diagnostics surface, not a permanent player requirement. Stop it with `Ctrl+C`.
 
 ## Test it with The Sims 4
 

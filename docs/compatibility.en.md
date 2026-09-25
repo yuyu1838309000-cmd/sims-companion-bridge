@@ -17,7 +17,7 @@ Last reviewed: 2026-09-25.
 | The Sims 4 1.128.90.1030 | Current test target |
 | Other Sims 4 versions | Not verified |
 | Local demo without The Sims 4 | Supported |
-| Real-game TS4Script | Buildable, not yet game-tested |
+| Real-game TS4Script | Read-only smoke passed on 1.128.90.1030 |
 
 ## Which users can use it now?
 
@@ -25,7 +25,7 @@ Last reviewed: 2026-09-25.
 
 **Not yet.**
 
-The current game package is still waiting for its first real-game verification.
+The current game package has passed its first read-only real-game smoke test, but it is not yet a finished player release.
 
 ### I want to see the project without installing The Sims 4
 

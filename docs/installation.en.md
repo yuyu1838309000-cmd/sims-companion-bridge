@@ -6,7 +6,7 @@
 
 This page describes the **current development-test installation**.
 
-The project is not yet a normal player release. The TS4Script build has not completed real-game verification, so these steps are for controlled testing only.
+The project is not yet a normal player release. The TS4Script has passed its first read-only real-game smoke test on 1.128.90.1030, but these steps are still for controlled development testing.
 
 ## Before you start
 
