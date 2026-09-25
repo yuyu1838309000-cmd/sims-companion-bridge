@@ -226,3 +226,19 @@ def test_event_worker_is_bounded_daemon_with_explicit_stop():
     assert delivered.wait(2)
     assert worker.stop(2) is True
     assert worker.last_result == (True, {"event_id": "evt-worker"})
+
+
+
+def test_preflight_detects_dx9_and_default_game_process_names():
+    path = ROOT / "scripts" / "preflight.py"
+    spec = importlib.util.spec_from_file_location("scb_preflight_process_test", str(path))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module._running_game_process_names(
+        "TS4_DX9_x64.exe             1234 Console"
+    ) == ["TS4_DX9_x64.exe"]
+    assert module._running_game_process_names(
+        "TS4_x64.exe 1234\nTS4_DX9_x64.exe 5678"
+    ) == ["TS4_x64.exe", "TS4_DX9_x64.exe"]
+    assert module._running_game_process_names("notepad.exe 42") == []

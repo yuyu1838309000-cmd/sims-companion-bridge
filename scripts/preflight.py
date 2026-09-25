@@ -12,6 +12,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CANDIDATE = ROOT / "game-mod" / "dist" / "SimsCompanionBridge.ts4script"
+GAME_PROCESS_NAMES = ("TS4_x64.exe", "TS4_DX9_x64.exe")
 SKIP_DIRS = {".git", ".pytest_cache", "__pycache__", ".venv", "venv", "dist", "build", ".local"}
 TEXT_SUFFIXES = {".py", ".js", ".html", ".css", ".json", ".toml", ".md", ".yml", ".yaml", ".txt"}
 GENERIC_PATTERNS = (
@@ -217,6 +218,11 @@ def check_candidate(report, candidate, expected_game_version, deny_terms):
     report.info("candidate SHA256=" + digest)
 
 
+def _running_game_process_names(tasklist_output):
+    lowered = tasklist_output.lower()
+    return [name for name in GAME_PROCESS_NAMES if name.lower() in lowered]
+
+
 def check_game_process(report, skip):
     if skip:
         report.info("game-process check skipped by request")
@@ -225,13 +231,18 @@ def check_game_process(report, skip):
         report.info("game-process check not applicable on this OS")
         return
     result = subprocess.run(
-        ["tasklist", "/NH", "/FI", "IMAGENAME eq TS4_x64.exe"],
+        ["tasklist", "/NH"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         universal_newlines=True,
     )
-    if "TS4_x64.exe" in result.stdout:
-        report.block("The Sims 4 is running; stop before changing Live Mods")
+    if result.returncode != 0:
+        report.block("could not determine whether The Sims 4 is running")
+        return
+    running = _running_game_process_names(result.stdout)
+    if running:
+        report.block("The Sims 4 is running (%s); stop before changing Live Mods" %
+                     ", ".join(running))
     else:
         report.pass_("The Sims 4 is not running")
 
