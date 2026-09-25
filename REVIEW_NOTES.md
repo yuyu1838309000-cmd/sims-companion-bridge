@@ -4,23 +4,37 @@
 
 - Localhost-only gateway, persistent SQLite World Event Store, deterministic mock companion, strict validation, and a working four-tab Game Window.
 - Protocol v0.1 schemas, capability negotiation, Python adapter SDK, disabled cross-surface recall interface, and inert semantic intents.
-- Python 3.7-compatible read-only game-mod source skeleton. It is not packaged or game-tested and cannot perform actions or alter autonomy.
+- Python 3.7-compatible read-only normalization, lazy TS4 reader, bounded
+  loopback transport, thin loader, and explicit `scb.snapshot` / `scb.status`
+  commands. A reproducible TS4Script candidate exists; it is not game-tested
+  and cannot perform actions or alter autonomy.
+- Strict `game.snapshot` contract and dedicated loopback ingestion route with
+  atomic branch snapshot/event persistence, canonical idempotency, conflict
+  detection, and additive SQLite migration.
 - MIT license, public documentation, packaging metadata, and unit/integration tests.
 
 ## Verification
 
-Independent verification on 2026-09-24:
+Verification on 2026-09-25:
 
-- Fresh isolated environment after the conversation-continuity patch: `pytest -q` -> **18 passed**.
-- Python 3.7.9 `compileall` over `game-mod/src` -> **PY37_COMPILE_OK**.
-- Fresh localhost smoke test verified gateway health, chat reply, and persisted chat history.
-- Public-safety text scan found no private names, local user ID, private server port marker, API-key-looking value, private-key header, project-local absolute path, U+FFFD replacement characters, or non-demo credentials.
+- Full source/fixture/local-loopback suite: `pytest` -> **38 passed**.
+- CPython 3.7.9 compiled all six `game-mod/src` modules and the build script.
+- The generated TS4Script contains six sourceless Python 3.7 bytecode modules;
+  its `420d0d0a` magic matches an existing 1.127-compatible script Mod sample.
+- Localhost integration tests verify ingestion, idempotent replay, conflict,
+  preferred observed-world selection, and the next backend `TurnRequest.world`
+  snapshot.
+- Public-safety scans found no private names, local user ID, private server path, API-key-looking value, or non-demo credentials in source or the candidate archive; every pyc `co_filename` is relative.
 - Codex review passes caught and fixed non-finite JSON backend parameters, persisted chat-history rendering, protocol-compatible game-side world/branch identifiers, positional SDK compatibility, and remote-backend privacy disclosure.
-- Additional manual review fixed conversation IDs crossing world/branch boundaries, bounded backend intent parameters, aligned public adapter naming, corrected backend protocol documentation, and ensured the complete persisted Game Conversation reaches the backend independently of the UI history limit.
+- Additional manual review fixed conversation IDs crossing world/branch boundaries, separated running from queued TS4 interactions, removed the Game Window's hard-coded demo-world routing, bounded backend intent parameters, and ensured the complete persisted Game Conversation reaches the backend independently of the UI history limit.
 
 ## Known gaps
 
-Remote backends, live game ingestion, implemented recall, and action execution are intentionally outside v0.1. The game skeleton has not been tested inside The Sims 4. The current quick start is source-checkout oriented; distributable desktop/gateway packaging is a later milestone.
+Remote backends, automatic live lifecycle wiring, implemented recall, and
+action execution remain outside v0.1. TS4 reader API details may vary by patch;
+the candidate has fixture/offline coverage but has not been tested inside The
+Sims 4. Desktop/gateway packaging and a game-verified Mod release remain later
+milestones.
 
 ## Public-safety boundary
 

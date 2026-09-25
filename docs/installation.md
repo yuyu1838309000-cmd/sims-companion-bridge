@@ -20,7 +20,7 @@
 当前测试目标：
 
 ```text
-The Sims 4 1.127.41.1030
+The Sims 4 1.128.90.1030
 ```
 
 其他游戏版本目前没有验证。
@@ -47,8 +47,8 @@ http://127.0.0.1:8765
 如果你自己从源码构建：
 
 ```powershell
-python game-mod/build_ts4script.py
-py scripts/preflight.py
+python game-mod/build_ts4script.py --game-version 1.128.90.1030
+py scripts/preflight.py --game-version 1.128.90.1030
 ```
 
 最后必须看到：

@@ -18,6 +18,11 @@ serves files only from the web root, and returns sanitized errors. Backend outpu
 is untrusted and validated. Browser rendering uses text nodes, not HTML injection.
 The Content Security Policy disallows external scripts and framing.
 
+The game-ingestion route accepts only the closed, bounded `game.snapshot`
+contract. It rejects unknown fields, malformed identifiers, non-finite numbers,
+and conflicting reuse of an immutable event ID. Ingestion persists observations;
+it does not invoke the backend or expose an action path.
+
 Local processes and browser extensions can still access loopback services; this
 demo is not an authentication boundary. Do not expose its port through a proxy or
 port-forward. The SQLite file contains local demo conversations and should be

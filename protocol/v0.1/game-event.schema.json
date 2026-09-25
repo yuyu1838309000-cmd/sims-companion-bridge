@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/sims-companion-bridge/v0.1/game-event.schema.json",
+  "title": "Read-only game snapshot event v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "event_id", "world_id", "branch_id", "type", "source", "provenance", "wallclock_unix", "sim_time", "payload"],
+  "properties": {
+    "protocol_version": {"const": "0.1"},
+    "event_id": {"$ref": "#/$defs/id"},
+    "world_id": {"$ref": "#/$defs/id"},
+    "branch_id": {"$ref": "#/$defs/id"},
+    "type": {"const": "game.snapshot"},
+    "source": {"const": "game_mod"},
+    "provenance": {"const": "observed"},
+    "wallclock_unix": {"type": "number", "minimum": 0, "maximum": 4102444800},
+    "sim_time": {"$ref": "#/$defs/nullableShortText"},
+    "payload": {"$ref": "#/$defs/snapshot"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"},
+    "nullableId": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "nullableShortText": {"oneOf": [{"type": "string", "minLength": 1, "maxLength": 64}, {"type": "null"}]},
+    "nullableName": {"oneOf": [{"type": "string", "minLength": 1, "maxLength": 128}, {"type": "null"}]},
+    "nullableNeed": {"oneOf": [{"type": "number", "minimum": 0, "maximum": 100}, {"type": "null"}]},
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_version", "save_slot_id", "zone", "simulation", "player", "companion", "present_sims"],
+      "properties": {
+        "snapshot_version": {"const": "0.1"},
+        "save_slot_id": {"$ref": "#/$defs/nullableId"},
+        "zone": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["zone_id", "name"],
+          "properties": {
+            "zone_id": {"$ref": "#/$defs/nullableId"},
+            "name": {"oneOf": [{"type": "string", "minLength": 1, "maxLength": 256}, {"type": "null"}]}
+          }
+        },
+        "simulation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sim_time", "in_build_buy"],
+          "properties": {
+            "sim_time": {"$ref": "#/$defs/nullableShortText"},
+            "in_build_buy": {"oneOf": [{"type": "boolean"}, {"type": "null"}]}
+          }
+        },
+        "player": {"oneOf": [{"$ref": "#/$defs/sim"}, {"type": "null"}]},
+        "companion": {"oneOf": [{"$ref": "#/$defs/sim"}, {"type": "null"}]},
+        "present_sims": {"type": "array", "maxItems": 40, "items": {"$ref": "#/$defs/presentSim"}}
+      }
+    },
+    "sim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sim_id", "name", "mood", "needs", "interactions"],
+      "properties": {
+        "sim_id": {"$ref": "#/$defs/nullableId"},
+        "name": {"$ref": "#/$defs/nullableName"},
+        "mood": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "intensity"],
+          "properties": {
+            "name": {"$ref": "#/$defs/nullableShortText"},
+            "intensity": {"oneOf": [{"type": "number", "minimum": -1000, "maximum": 1000}, {"type": "null"}]}
+          }
+        },
+        "needs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hunger", "energy", "fun", "social", "hygiene", "bladder"],
+          "properties": {
+            "hunger": {"$ref": "#/$defs/nullableNeed"},
+            "energy": {"$ref": "#/$defs/nullableNeed"},
+            "fun": {"$ref": "#/$defs/nullableNeed"},
+            "social": {"$ref": "#/$defs/nullableNeed"},
+            "hygiene": {"$ref": "#/$defs/nullableNeed"},
+            "bladder": {"$ref": "#/$defs/nullableNeed"}
+          }
+        },
+        "interactions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["running", "queued"],
+          "properties": {
+            "running": {"type": "array", "maxItems": 8, "items": {"type": "string", "minLength": 1, "maxLength": 128}},
+            "queued": {"type": "array", "maxItems": 20, "items": {"type": "string", "minLength": 1, "maxLength": 128}}
+          }
+        }
+      }
+    },
+    "presentSim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sim_id", "name"],
+      "properties": {
+        "sim_id": {"$ref": "#/$defs/nullableId"},
+        "name": {"$ref": "#/$defs/nullableName"}
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ You need:
 The current test target is:
 
 ```text
-The Sims 4 1.127.41.1030
+The Sims 4 1.128.90.1030
 ```
 
 Other game versions are not yet verified.
@@ -47,8 +47,8 @@ You should see the local Game Window.
 If you are using the repository build:
 
 ```powershell
-python game-mod/build_ts4script.py
-py scripts/preflight.py
+python game-mod/build_ts4script.py --game-version 1.128.90.1030
+py scripts/preflight.py --game-version 1.128.90.1030
 ```
 
 Do not continue unless the final preflight line is:

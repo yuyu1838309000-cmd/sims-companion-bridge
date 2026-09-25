@@ -14,7 +14,7 @@ Last reviewed: 2026-09-25.
 | --- | --- |
 | Windows | Development target |
 | macOS | Not verified |
-| The Sims 4 1.127.41.1030 | Current test target |
+| The Sims 4 1.128.90.1030 | Current test target |
 | Other Sims 4 versions | Not verified |
 | Local demo without The Sims 4 | Supported |
 | Real-game TS4Script | Buildable, not yet game-tested |

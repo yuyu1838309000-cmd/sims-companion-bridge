@@ -1,4 +1,5 @@
 import json
+import importlib.util
 import threading
 from http.client import HTTPConnection
 from pathlib import Path
@@ -170,8 +171,87 @@ def test_full_http_demo_surface(server):
     assert history["turns"][0]["user_text"] == "hello"
 
 
+def test_game_window_chat_follows_selected_world_scope():
+    script = (Path(__file__).resolve().parents[1] / "web" / "app.js").read_text(encoding="utf-8")
+    assert "world_id: activeWorld.world_id" in script
+    assert "branch_id: activeWorld.branch_id" in script
+    assert 'world_id: "demo-world"' not in script
+    assert "conversationId:${world.world_id}:${world.branch_id}" in script
+
+
 def test_http_security_boundaries(server):
     assert http(server, "GET", "/api/v0.1/health", headers={"Host": "example.invalid"})[0] == 403
     assert http(server, "POST", "/api/v0.1/chat", "{}", {"Content-Type": "text/plain"})[0] == 400
     assert http(server, "POST", "/api/v0.1/chat", "{}", {"Content-Type": "application/json", "Origin": "https://example.invalid"})[0] == 403
+    assert http(server, "POST", "/api/v0.1/game/events", "{}", {"Content-Type": "application/json", "Origin": "https://example.invalid"})[0] == 403
     assert http(server, "POST", "/api/v0.1/chat", "x" * 20000, {"Content-Type": "application/json"})[0] == 400
+
+
+def test_http_ingestion_updates_world_and_next_backend_request(tmp_path, game_event_factory):
+    web = Path(__file__).resolve().parents[1] / "web"
+    backend = CapturingBackend()
+    instance = create_server(tmp_path / "ingestion-http.sqlite3", 0, web, backend=backend)
+    thread = threading.Thread(target=instance.serve_forever, daemon=True)
+    thread.start()
+    try:
+        event = game_event_factory(world_id="game-world")
+        status, _, body = http(
+            instance, "POST", "/api/v0.1/game/events", json.dumps(event),
+            {"Content-Type": "application/json"},
+        )
+        assert status == 201
+        assert json.loads(body) == {"accepted": True, "event_id": "evt-fixture", "duplicate": False}
+        assert backend.requests == []
+
+        status, _, body = http(instance, "GET", "/api/v0.1/world")
+        assert status == 200
+        world_response = json.loads(body)
+        assert world_response["world"]["world_id"] == "game-world"
+        assert world_response["world"]["status"] == "online"
+        assert world_response["world"]["current_snapshot"]["zone"]["name"] == "Fixture Lot"
+        explicit_demo = json.loads(http(
+            instance, "GET", "/api/v0.1/world?world_id=demo-world&branch_id=main"
+        )[2])
+        assert explicit_demo["world"]["world_id"] == "demo-world"
+
+        chat = chat_payload(conversation="ingested-conversation")
+        chat["world_id"] = "game-world"
+        status, _, _ = http(
+            instance, "POST", "/api/v0.1/chat", json.dumps(chat),
+            {"Content-Type": "application/json"},
+        )
+        assert status == 200
+        assert backend.requests[-1].world["current_event_id"] == "evt-fixture"
+        assert backend.requests[-1].world["current_snapshot"] == event["payload"]
+
+        assert http(
+            instance, "POST", "/api/v0.1/game/events", json.dumps(event),
+            {"Content-Type": "application/json"},
+        )[0] == 200
+        conflict = game_event_factory(zone_name="Conflict Lot")
+        assert http(
+            instance, "POST", "/api/v0.1/game/events", json.dumps(conflict),
+            {"Content-Type": "application/json"},
+        )[0] == 409
+    finally:
+        instance.shutdown()
+        instance.server_close()
+        instance.store.close()
+        thread.join()
+
+
+def test_game_transport_posts_only_to_local_test_gateway(server, game_event_factory):
+    path = (Path(__file__).resolve().parents[1] / "game-mod" / "src" /
+            "sims_companion_bridge" / "transport.py")
+    spec = importlib.util.spec_from_file_location("game_loopback_transport", str(path))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    transport = module.LoopbackTransport(
+        "http://127.0.0.1:{}".format(server.server_port), timeout=2
+    )
+    ok, result = transport.post_event(game_event_factory(event_id="evt-transport"))
+    assert ok is True
+    assert result == {"accepted": True, "event_id": "evt-transport", "duplicate": False}
+    assert server.store.get_world()["current_event_id"] == "evt-transport"
+    with pytest.raises(ValueError, match="loopback"):
+        module.LoopbackTransport("http://example.invalid:8765")

@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlparse
 
 from .app import BridgeApp
 from .mock_backend import MockCompanionBackend
-from .store import WorldStore
+from .store import EventConflictError, WorldStore
 from .validation import ValidationError
 
 HOST = "127.0.0.1"
@@ -18,6 +18,10 @@ MAX_BODY_BYTES = 16 * 1024
 ALLOWED_HOSTS = {"127.0.0.1", "localhost", "[::1]", "::1"}
 ALLOWED_ORIGIN_HOSTS = {"127.0.0.1", "localhost", "::1"}
 MIME_TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8"}
+
+
+def reject_json_constant(value):
+    raise ValueError("non-finite JSON number: " + value)
 
 
 def default_web_root():
@@ -33,16 +37,28 @@ def make_handler(app, web_root):
         def log_message(self, fmt, *args):
             sys.stderr.write("gateway: " + (fmt % args) + "\n")
 
+        def _discard_request_body(self, limit=64 * 1024):
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                return
+            if 0 < length <= limit:
+                self.rfile.read(length)
+            elif length > limit:
+                self.close_connection = True
+
         def _request_allowed(self):
             host_header = self.headers.get("Host", "").lower()
             host = host_header.split("]", 1)[0] + "]" if host_header.startswith("[") else host_header.split(":", 1)[0]
             if host not in ALLOWED_HOSTS:
+                self._discard_request_body()
                 self._json(403, {"error": "host_not_allowed"})
                 return False
             origin = self.headers.get("Origin")
             if origin:
                 parsed = urlparse(origin)
                 if parsed.scheme != "http" or parsed.hostname not in ALLOWED_ORIGIN_HOSTS:
+                    self._discard_request_body()
                     self._json(403, {"error": "origin_not_allowed"})
                     return False
             return True
@@ -68,10 +84,14 @@ def make_handler(app, web_root):
             if length <= 0 or length > MAX_BODY_BYTES:
                 raise ValidationError("request body must be between 1 and {} bytes".format(MAX_BODY_BYTES))
             if self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json":
+                self.rfile.read(length)
                 raise ValidationError("content type must be application/json")
             try:
-                return json.loads(self.rfile.read(length).decode("utf-8"))
-            except (UnicodeDecodeError, json.JSONDecodeError):
+                return json.loads(
+                    self.rfile.read(length).decode("utf-8"),
+                    parse_constant=reject_json_constant,
+                )
+            except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
                 raise ValidationError("invalid JSON")
 
         def do_GET(self):
@@ -84,7 +104,10 @@ def make_handler(app, web_root):
                 if parsed.path == "/api/v0.1/diagnostics":
                     return self._json(200, app.diagnostics())
                 if parsed.path == "/api/v0.1/world":
-                    return self._json(200, app.world_snapshot())
+                    query = parse_qs(parsed.query)
+                    world_id = query.get("world_id", [None])[0]
+                    branch_id = query.get("branch_id", [None])[0]
+                    return self._json(200, app.world_snapshot(world_id, branch_id))
                 if parsed.path == "/api/v0.1/chat/history":
                     conversation_id = parse_qs(parsed.query).get("conversation_id", ["demo-conversation"])[0]
                     return self._json(200, app.chat_history(conversation_id))
@@ -97,14 +120,23 @@ def make_handler(app, web_root):
         def do_POST(self):
             if not self._request_allowed():
                 return
+            path = urlparse(self.path).path
             try:
-                if urlparse(self.path).path != "/api/v0.1/chat":
-                    return self._json(404, {"error": "not_found"})
-                self._json(200, app.chat(self._read_json()))
+                if path == "/api/v0.1/chat":
+                    return self._json(200, app.chat(self._read_json()))
+                if path == "/api/v0.1/game/events":
+                    result = app.ingest_game_event(self._read_json())
+                    return self._json(200 if result["duplicate"] else 201, result)
+                return self._json(404, {"error": "not_found"})
+            except EventConflictError as exc:
+                self._json(409, {"error": "event_conflict", "message": str(exc)})
             except ValidationError as exc:
                 self._json(400, {"error": "invalid_request", "message": str(exc)})
             except Exception:
-                self._json(502, {"error": "backend_error", "message": "The companion response was rejected or unavailable."})
+                if path == "/api/v0.1/chat":
+                    self._json(502, {"error": "backend_error", "message": "The companion response was rejected or unavailable."})
+                else:
+                    self._json(500, {"error": "internal_error", "message": "The gateway could not complete the request."})
 
         def _serve_static(self, path):
             relative = "index.html" if path in ("", "/") else path.lstrip("/")

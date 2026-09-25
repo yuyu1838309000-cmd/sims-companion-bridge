@@ -5,7 +5,9 @@ from sims_companion_sdk import TurnRequest, TurnResponse
 
 from . import PROTOCOL_VERSION, __version__
 from .recall import DisabledCrossSurfaceProvider
-from .validation import ALLOWED_TURN_SOURCES, ValidationError, require_id, require_text, validate_backend_response
+from .validation import (ALLOWED_TURN_SOURCES, ValidationError, require_id,
+                         require_text, validate_backend_response,
+                         validate_game_event)
 
 
 class BridgeApp:
@@ -28,11 +30,26 @@ class BridgeApp:
             "mode": "read_only",
         }
 
-    def world_snapshot(self):
-        world = self.store.get_world()
+    def world_snapshot(self, world_id=None, branch_id=None):
+        if world_id is None and branch_id is None:
+            world = self.store.preferred_world()
+        elif world_id is None or branch_id is None:
+            raise ValidationError("world_id and branch_id must be provided together")
+        else:
+            require_id(world_id, "world_id")
+            require_id(branch_id, "branch_id")
+            world = self.store.get_world(world_id, branch_id)
         if not world:
-            raise RuntimeError("demo world is unavailable")
-        return {"world": world, "events": self.store.recent_events()}
+            raise ValidationError("unknown world or branch")
+        return {
+            "world": world,
+            "events": self.store.recent_events(world["world_id"], world["branch_id"]),
+        }
+
+    def ingest_game_event(self, data):
+        event = validate_game_event(data)
+        result = self.store.ingest_snapshot_event(event)
+        return {"accepted": True, **result}
 
     def chat_history(self, conversation_id):
         require_id(conversation_id, "conversation_id")
